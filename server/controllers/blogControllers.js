@@ -122,6 +122,51 @@ export const togglePublish = async (req, res) => {
     }
 }
 
+export const updateBlog = async (req, res) => {
+    try {
+        const { id, title, subTitle, description, category, language, isPublished } = req.body;
+        if (!id) return res.status(400).json({ success: false, message: 'Blog id is required' });
+
+        const blog = await Model.findById(id);
+        if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
+
+        // Update basic fields
+        if (title !== undefined) blog.title = title;
+        if (subTitle !== undefined) blog.subTitle = subTitle;
+        if (description !== undefined) blog.description = description;
+        if (category !== undefined) blog.category = category;
+        if (language !== undefined) blog.language = language;
+        if (isPublished !== undefined) blog.isPublished = (String(isPublished) === 'true' || isPublished === true);
+
+        // If a new image file is uploaded, upload to imagekit and replace
+        if (req.file) {
+            const fileBuffer = fs.readFileSync(req.file.path);
+            const imagekit = getImagekitInstance();
+            if (!imagekit) return res.status(500).json({ success: false, message: 'ImageKit not configured' });
+            const response = await imagekit.upload({
+                file: fileBuffer,
+                fileName: req.file.originalname,
+                folder: 'NewBlogs'
+            });
+            const optimizationofImage = imagekit.url({ path: response.filePath, transformation: [{ quality: 'auto' }, { format: 'webp' }, { width: '1080' }] });
+            blog.image = optimizationofImage;
+        }
+
+        const wasPublishedBefore = blog.isPublished;
+        await blog.save();
+
+        // If it was changed to published now, notify subscribers
+        if (!wasPublishedBefore && blog.isPublished) {
+            try { await notifySubscribers(blog); } catch (e) { console.warn('Notify on update failed', e?.message || e); }
+        }
+
+        res.json({ success: true, message: 'Blog updated successfully', blog });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 
 export const addComment = async (req, res) => {
     try {

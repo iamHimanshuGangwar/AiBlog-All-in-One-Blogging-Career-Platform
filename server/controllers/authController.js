@@ -202,6 +202,12 @@ export const refreshToken = async (req, res) => {
     res.status(200).json({
       success: true,
       token: newToken,
+      user: {
+        name: user.name,
+        lastname: user.lastname,
+        email: user.email,
+        isAdmin: process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL,
+      },
     });
   } catch (err) {
     res.status(401).json({ success: false, message: "Token refresh failed" });

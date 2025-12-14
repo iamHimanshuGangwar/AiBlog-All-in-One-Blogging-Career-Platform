@@ -6,7 +6,7 @@ import { Lock, Mail, LogIn } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { axios, setToken, token } = useAppContext();
+  const { axios, setToken, setUser, token } = useAppContext();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,10 +26,21 @@ const Login = () => {
 
       if (data && data.success) {
         const tokenValue = data.token;
-        localStorage.setItem('token', tokenValue);
+        const userData = data.user;
+        
+        // Save token and user to context and localStorage
         setToken(tokenValue);
+        setUser(userData);
+        
+        // Update axios headers
         axios.defaults.headers.common['Authorization'] = tokenValue;
-        toast.success('Login successful!');
+        
+        toast.success('Admin login successful!');
+        
+        // Navigate to dashboard after a short delay to ensure state updates
+        setTimeout(() => {
+          navigate('/admin', { replace: true });
+        }, 500);
       } else {
         toast.error(data?.message || 'Login failed');
       }
@@ -44,7 +55,7 @@ const Login = () => {
     if (token) {
       navigate('/admin', { replace: true });
     }
-  }, [token]);
+  }, [token, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -124,11 +135,20 @@ const Login = () => {
           </form>
 
           {/* Footer */}
-          <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 text-center">
+          <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 text-center space-y-3">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Default credentials:
               <br />
               <span className="font-mono text-xs">admin@example.com</span>
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/admin/register')}
+                className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold transition-colors"
+              >
+                Sign up here
+              </button>
             </p>
           </div>
         </div>

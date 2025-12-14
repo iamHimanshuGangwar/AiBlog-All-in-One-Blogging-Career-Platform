@@ -15,6 +15,8 @@ import aiRouter from "./routes/aiRoutes.js";
 import subscribeRouter from "./routes/subscribeRoutes.js";
 import featureRouter from "./routes/featureRoutes.js";
 import { subscribe as subscribeHandler, unsubscribe as unsubscribeHandler } from "./controllers/subscriberController.js";
+import jobRouter from "./routes/jobRoutes.js";
+import jobListingRouter from "./routes/jobListingRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,6 +54,8 @@ app.use("/api/image", imageRouter);    // /api/image/*
 app.use("/api/ai", aiRouter);          // /api/ai/*
 app.use("/api/subscribe", subscribeRouter); // /api/subscribe
 app.use("/api/features", featureRouter); // /api/features
+app.use("/api/jobs", jobRouter); // /api/jobs (applications)
+app.use("/api/job-listings", jobListingRouter); // /api/job-listings (postings)
 
 // Serve client build (if present) and add SPA fallback for non-API routes
 const clientBuildPath = path.join(__dirname, '..', 'client', 'dist');
@@ -75,6 +79,15 @@ app.use((req, res, next) => {
     return res.status(404).json({ success: false, message: `Cannot ${req.method} ${req.path}` });
   }
   next();
+});
+
+// Global error handler (returns JSON for API errors)
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err && err.stack ? err.stack : err);
+  if (req.path && req.path.startsWith('/api/')) {
+    return res.status(err.status || 500).json({ success: false, message: err.message || 'Server error' });
+  }
+  next(err);
 });
 
 // Server Port

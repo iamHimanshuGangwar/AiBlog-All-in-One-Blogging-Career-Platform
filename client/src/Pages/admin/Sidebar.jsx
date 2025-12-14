@@ -5,7 +5,8 @@ import {
   PenSquare, 
   List, 
   MessageSquare, 
-  Image as ImageIcon 
+  Image as ImageIcon,
+  Briefcase
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -15,6 +16,8 @@ const Sidebar = () => {
     { path: '/admin/addblog', name: 'Add Blog', icon: PenSquare, end: true },
     { path: '/admin/listblog', name: 'All Posts', icon: List, end: true },
     { path: '/admin/comment', name: 'Comments', icon: MessageSquare, end: true },
+    { path: '/admin/job-applications', name: 'Job Applications', icon: Briefcase, end: true },
+    { path: '/admin/post-job', name: 'Post Job', icon: Briefcase, end: true },
     { path: '/admin/image-gen', name: 'AI Studio', icon: ImageIcon, end: true, isNew: true },
   ];
 

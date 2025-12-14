@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileText, Image, Briefcase, BookOpen, X } from "lucide-react";
+import toast from 'react-hot-toast'
+import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 import { motion, AnimatePresence } from "framer-motion";
 import resumeImg from "../assets/resume.jpeg";
 import imageImg from "../assets/image.jpeg";
@@ -10,9 +13,9 @@ import projectImg from "../assets/project.jpeg";
 // ROUTES FOR EACH FEATURE
 const routeMap = {
   resume: "/resume-builder",
-  generator: "/ai-image-generator",
+  generator: "/image-generator",
   jobs: "/jobs",
-  blog: "/blog",
+  blog: "/blogs",
 };
 
 // ICONS
@@ -124,6 +127,17 @@ const Features = () => {
   const [items, setItems] = useState([]);
   const [modalData, setModalData] = useState(null);
   const [hoverData, setHoverData] = useState(null);
+  const { user } = useAppContext();
+  const { openLogin } = useAuth();
+
+  const handleOpenModal = (item) => {
+    if (!user) {
+      toast.error('Please login to preview this feature')
+      openLogin()
+      return
+    }
+    setModalData(item)
+  }
 
   useEffect(() => {
     setItems([
@@ -181,7 +195,7 @@ const Features = () => {
               <FeatureItem
                 key={it.id}
                 item={it}
-                openModal={setModalData}
+                openModal={handleOpenModal}
                 setHover={setHoverData}
               />
             ))}

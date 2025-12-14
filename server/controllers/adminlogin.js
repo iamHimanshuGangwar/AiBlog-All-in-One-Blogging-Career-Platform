@@ -8,8 +8,22 @@ export const adminLogin = async (req, res) => {
         if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
             return res.json({ success: false, message: 'Invalid Credentials' })
         }
-        const jwttoken = jwt.sign({_id:"admin", email }, process.env.JWT_SECRET, { expiresIn: '6h' });
-        res.json({ success: true, token: jwttoken })
+        const jwttoken = jwt.sign({
+            id: "admin",
+            email: email,
+            isAdmin: true
+        }, process.env.JWT_SECRET, { expiresIn: '6h' });
+        
+        res.json({ 
+            success: true, 
+            token: jwttoken,
+            user: {
+                name: 'Admin',
+                lastname: '',
+                email: email,
+                isAdmin: true
+            }
+        })
     } catch (error) {
         res.json({ success: false, message: error.message })
     }
@@ -35,14 +49,14 @@ export const getAllComments = async (req, res) => {
 }
 export const getDashboard = async (req, res) => {
     try {
-        const recentBlogs = (await Model.find({})).sort({ createdAt: -1 });
+        const recentBlogs = await Model.find({}).sort({ createdAt: -1 }).limit(10);
         const blogs = await Model.countDocuments();
         const comments = await Comment.countDocuments()
         const drafts = await Model.countDocuments({ isPublished: false })
-        const dashbBoard = {
+        const dashboard = {
             blogs, comments, drafts, recentBlogs
         }
-        res.json({ success: true, dashbBoard })
+        res.json({ success: true, dashboard })
     } catch (error) {
         res.json({ success: false, message: error.message })
     }

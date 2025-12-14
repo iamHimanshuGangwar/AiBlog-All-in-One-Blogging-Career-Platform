@@ -1,11 +1,17 @@
 import React, { useState } from 'react'
-import { X, FileText, Image as ImageIcon, Zap } from 'lucide-react'
+import { X, FileText, Image as ImageIcon, Zap, Briefcase, BookOpen } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const FeatureMenu = ({ blogTitle, blogContent }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeFeature, setActiveFeature] = useState(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const { user } = useAppContext()
+  const { openLogin } = useAuth()
+  const navigate = useNavigate()
 
   const features = [
     {
@@ -26,6 +32,18 @@ const FeatureMenu = ({ blogTitle, blogContent }) => {
       icon: ImageIcon,
       description: 'Generate AI images for content',
     },
+    {
+      id: 'jobs',
+      name: 'Jobs',
+      icon: Briefcase,
+      description: 'Find jobs and manage applications',
+    },
+    {
+      id: 'blog',
+      name: 'Blog',
+      icon: BookOpen,
+      description: 'Create and browse blog posts',
+    },
   ]
 
   const handleSummarize = () => {
@@ -42,22 +60,62 @@ const FeatureMenu = ({ blogTitle, blogContent }) => {
   }
 
   const handleResumeBuilder = () => {
+    if (!user) {
+      toast.error('Please login to access Resume Builder')
+      openLogin()
+      return
+    }
     toast.loading('Opening Resume Builder...')
     setTimeout(() => {
-      window.open('/admin/resume-builder', '_blank', 'width=1200,height=800')
+      navigate('/resume-builder')
+      setIsOpen(false)
       toast.dismiss()
     }, 1000)
   }
 
   const handleImageGen = () => {
+    if (!user) {
+      toast.error('Please login to access Image Generator')
+      openLogin()
+      return
+    }
     if (!blogTitle) return toast.error('Please provide a blog title for image generation')
     setIsGenerating(true)
     toast.loading('Generating image...')
     setTimeout(() => {
+      navigate('/image-generator')
+      setIsOpen(false)
       toast.dismiss()
-      toast.success('Image generation coming soon!')
       setIsGenerating(false)
     }, 2000)
+  }
+
+  const handleJobs = () => {
+    if (!user) {
+      toast.error('Please login to access Jobs')
+      openLogin()
+      return
+    }
+    toast.loading('Opening Jobs...')
+    setTimeout(() => {
+      navigate('/jobs')
+      setIsOpen(false)
+      toast.dismiss()
+    }, 800)
+  }
+
+  const handleBlog = () => {
+    if (!user) {
+      toast.error('Please login to access Blog')
+      openLogin()
+      return
+    }
+    toast.loading('Opening Blog...')
+    setTimeout(() => {
+      navigate('/blogs')
+      setIsOpen(false)
+      toast.dismiss()
+    }, 800)
   }
 
   const handleFeature = (id) => {
@@ -66,6 +124,8 @@ const FeatureMenu = ({ blogTitle, blogContent }) => {
       case 'resume': return handleResumeBuilder()
       case 'summarize': return handleSummarize()
       case 'imageGen': return handleImageGen()
+      case 'jobs': return handleJobs()
+      case 'blog': return handleBlog()
       default: toast.error('Feature not available')
     }
   }

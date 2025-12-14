@@ -35,28 +35,52 @@ const Navbar = () => {
 
               {/* NAV BUTTONS */}
               <button
-                onClick={() => navigate("/resume-builder")}
+                onClick={() => {
+                  if (!user) {
+                    openLogin();
+                    return;
+                  }
+                  navigate("/resume-builder");
+                }}
                 className="hidden sm:block px-3 py-1.5 rounded-full text-sm hover:bg-white/20 transition"
               >
                 Resume Builder
               </button>
 
               <button
-                onClick={() => navigate("/image-generator")}
+                onClick={() => {
+                  if (!user) {
+                    openLogin();
+                    return;
+                  }
+                  navigate("/image-generator");
+                }}
                 className="hidden sm:block px-3 py-1.5 rounded-full text-sm hover:bg-white/20 transition"
               >
                 AI Image Generator
               </button>
 
               <button
-                onClick={() => navigate("/jobs")}
+                onClick={() => {
+                  if (!user) {
+                    openLogin();
+                    return;
+                  }
+                  navigate("/jobs");
+                }}
                 className="hidden sm:block px-3 py-1.5 rounded-full text-sm hover:bg-white/20 transition"
               >
                 Jobs
               </button>
 
               <button
-                onClick={() => navigate("/blogs")}
+                onClick={() => {
+                  if (!user) {
+                    openLogin();
+                    return;
+                  }
+                  navigate("/blogs");
+                }}
                 className="hidden sm:block px-3 py-1.5 rounded-full text-sm hover:bg-white/20 transition"
               >
                 Blogs
@@ -77,39 +101,53 @@ const Navbar = () => {
 
               {/* LOGIN / SIGNUP / LOGOUT / DASHBOARD */}
               {!token ? (
-                <>
+                <div className="hidden sm:flex items-center gap-2">
                   <button
                     onClick={openLogin}
-                    className="hidden sm:block px-4 py-1.5 rounded-full bg-white text-purple-600 hover:bg-gray-100 text-sm"
+                    className="px-4 py-1.5 rounded-full bg-white text-purple-600 hover:bg-gray-100 text-sm font-medium"
                   >
                     Login
                   </button>
 
                   <button
                     onClick={openSignup}
-                    className="hidden sm:block px-4 py-1.5 rounded-full border border-white text-white hover:bg-white hover:text-purple-600 text-sm"
+                    className="px-4 py-1.5 rounded-full border border-white text-white hover:bg-white hover:text-purple-600 text-sm font-medium transition"
                   >
                     Signup
                   </button>
-                </>
+                </div>
               ) : user?.isAdmin ? (
-                <button
-                  onClick={() => navigate("/admin")}
-                  className="hidden sm:block px-4 py-1.5 rounded-full bg-green-500 text-white text-sm"
-                >
-                  Dashboard
-                </button>
+                <div className="hidden sm:flex items-center gap-2">
+                  <button
+                    onClick={() => navigate("/admin")}
+                    className="px-4 py-1.5 rounded-full bg-green-500 text-white text-sm hover:bg-green-600 transition font-medium"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => {
+                      setToken(null);
+                      setUser(null);
+                      navigate("/");
+                    }}
+                    className="px-4 py-1.5 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
               ) : (
-                <button
-                  onClick={() => {
-                    setToken(null);
-                    setUser(null);
-                    navigate("/");
-                  }}
-                  className="hidden sm:block px-4 py-1.5 rounded-full bg-red-500 text-white text-sm"
-                >
-                  Logout
-                </button>
+                <div className="hidden sm:flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setToken(null);
+                      setUser(null);
+                      navigate("/");
+                    }}
+                    className="px-4 py-1.5 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
 
               {/* ===== MOBILE MENU BUTTON ===== */}
@@ -127,25 +165,49 @@ const Navbar = () => {
         {mobileOpen && (
           <div className="md:hidden bg-white text-black px-4 py-4 space-y-3">
             <button
-              onClick={() => { navigate("/resume-builder"); setMobileOpen(false); }}
+              onClick={() => { 
+                if (!user) {
+                  openLogin();
+                  setMobileOpen(false);
+                  return;
+                }
+                navigate("/resume-builder"); 
+                setMobileOpen(false); 
+              }}
               className="block w-full text-left py-2"
             >
               Resume Builder
             </button>
             <button
-              onClick={() => { navigate("/image-generator"); setMobileOpen(false); }}
+              onClick={() => { 
+                if (!user) {
+                  openLogin();
+                  setMobileOpen(false);
+                  return;
+                }
+                navigate("/image-generator"); 
+                setMobileOpen(false); 
+              }}
               className="block w-full text-left py-2"
             >
               AI Image Generator
             </button>
             <button
-              onClick={() => { navigate("/jobs"); setMobileOpen(false); }}
+              onClick={() => { 
+                if (!user) {
+                  openLogin();
+                  setMobileOpen(false);
+                  return;
+                }
+                navigate("/jobs"); 
+                setMobileOpen(false); 
+              }}
               className="block w-full text-left py-2"
             >
               Jobs
             </button>
             <button
-              onClick={() => { navigate("/blogs"); setMobileOpen(false); }}
+              onClick={() => { if (!user) { openLogin(); setMobileOpen(false); return; } navigate("/blogs"); setMobileOpen(false); }}
               className="block w-full text-left py-2"
             >
               Blogs
@@ -155,21 +217,36 @@ const Navbar = () => {
               <>
                 <button
                   onClick={() => { openLogin(); setMobileOpen(false); }}
-                  className="block w-full text-left py-2"
+                  className="block w-full text-left py-2 font-medium"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => { openSignup(); setMobileOpen(false); }}
-                  className="block w-full text-left py-2"
+                  className="block w-full text-left py-2 font-medium"
                 >
                   Signup
+                </button>
+              </>
+            ) : user?.isAdmin ? (
+              <>
+                <button
+                  onClick={() => { navigate("/admin"); setMobileOpen(false); }}
+                  className="block w-full text-left py-2 text-green-500 font-semibold"
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => { setToken(null); setUser(null); navigate("/"); setMobileOpen(false); }}
+                  className="block w-full text-left py-2 text-red-500 font-semibold"
+                >
+                  Logout
                 </button>
               </>
             ) : (
               <button
                 onClick={() => { setToken(null); setUser(null); navigate("/"); setMobileOpen(false); }}
-                className="block w-full text-left py-2 text-red-500"
+                className="block w-full text-left py-2 text-red-500 font-semibold"
               >
                 Logout
               </button>

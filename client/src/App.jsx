@@ -11,7 +11,10 @@ import ListBlog from './Pages/admin/ListBlog'
 import Comment from './Pages/admin/Comment'
 import Login from './Pages/admin/Login'
 import ImageGenerator from './Pages/admin/imageGenerate'
+import JobApplications from './Pages/admin/JobApplications'
+import PostJob from './Pages/admin/PostJob'
 import ResumeBuilder from './Pages/ResumeBuilder'
+import JobSearch from './Pages/JobSearch'
 import 'quill/dist/quill.snow.css'
 import { Toaster } from 'react-hot-toast'
 import { useAppContext } from './context/AppContext'
@@ -32,10 +35,11 @@ const App = () => {
       <Routes>
         {/* Public */}
         <Route path="/" element={<Home />} />
-        <Route path="/resume-builder" element={<ResumeBuilder />} />
-        <Route path="/image-generator" element={<ImageGenerator />} />
+        <Route path="/resume-builder" element={<><Navbar /><ResumeBuilder /></>} />
+        <Route path="/image-generator" element={<><Navbar /><ImageGenerator /></>} />
         <Route path="/blogs" element={<><Navbar /><BlogList /></>} />
         <Route path="/blog/:id" element={<Blog />} />
+        <Route path="/jobs" element={<><Navbar /><JobSearch /></>} />
 
         {/* Login */}
         <Route
@@ -53,10 +57,13 @@ const App = () => {
           }
         >
           <Route index element={<DashBoard />} />
+          <Route path="addblog/:id" element={<AddBlog />} />
           <Route path="addblog" element={<AddBlog />} />
           <Route path="listblog" element={<ListBlog />} />
           <Route path="comment" element={<Comment />} />
           <Route path="image-gen" element={<ImageGenerator />} />
+          <Route path="job-applications" element={<JobApplications />} />
+          <Route path="post-job" element={<PostJob />} />
         </Route>
 
       </Routes>

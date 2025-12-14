@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -13,41 +13,53 @@ export const AppProvider = ({ children }) => {
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState("light");
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const tokenRef = useRef(null);
 
   // ----------------------
   // Token & Refresh Logic
   // ----------------------
   const setAuthToken = (newToken) => {
     setToken(newToken);
+    tokenRef.current = newToken;
     if (newToken) {
       localStorage.setItem("token", newToken);
       axios.defaults.headers.common["Authorization"] = newToken;
     } else {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];
     }
   };
 
   const setAuthUser = (userObj) => {
     setUser(userObj || null);
+    if (userObj) {
+      localStorage.setItem("user", JSON.stringify(userObj));
+    } else {
+      localStorage.removeItem("user");
+    }
   };
 
   const refreshToken = async () => {
     try {
-      // include existing token in Authorization header so server can validate and refresh
-      const currentToken = token || localStorage.getItem('token') || '';
+      // Use tokenRef to get the current token
+      const currentToken = tokenRef.current || localStorage.getItem('token') || '';
       const headers = currentToken ? { Authorization: currentToken } : {};
       const { data } = await axios.post("/api/auth/refresh", {}, { withCredentials: true, headers });
       if (data?.success && data?.token) {
         setAuthToken(data.token);
+        if (data.user) setAuthUser(data.user);
         return data.token;
       } else {
         setAuthToken(null);
+        setAuthUser(null);
         return null;
       }
     } catch (err) {
       console.error('Refresh token error:', err?.response?.data || err.message || err);
       setAuthToken(null);
+      setAuthUser(null);
       return null;
     }
   };
@@ -58,7 +70,10 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
-        if (token) config.headers.Authorization = token;
+        const currentToken = tokenRef.current || localStorage.getItem("token");
+        if (currentToken) {
+          config.headers.Authorization = currentToken;
+        }
         return config;
       },
       (error) => Promise.reject(error)
@@ -79,9 +94,9 @@ export const AppProvider = ({ children }) => {
           } else {
             toast.error("Session expired. Please login again.");
           }
-        } else if (status >= 400) {
-          toast.error(error.response?.data?.message || "An error occurred");
         }
+        // Only log errors, don't show toast for every error on initial load
+        // This prevents network error popups on page refresh
 
         return Promise.reject(error);
       }
@@ -91,19 +106,19 @@ export const AppProvider = ({ children }) => {
       axios.interceptors.request.eject(reqInterceptor);
       axios.interceptors.response.eject(resInterceptor);
     };
-  }, [token]);
+  }, []);
 
   // ----------------------
   // Fetch Blogs
   // ----------------------
-  const fetchBlogs = async () => {
+  const fetchBlogs = async (showError = false) => {
     try {
       setLoading(true);
       const { data } = await axios.get("/api/add/all");
       if (data.success) setBlogs(data.blogs);
-      else toast.error(data.message);
+      else if (showError) toast.error(data.message);
     } catch (err) {
-      toast.error(err.message);
+      if (showError) toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -124,18 +139,44 @@ export const AppProvider = ({ children }) => {
   // Initial Load
   // ----------------------
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken && storedToken !== "undefined") {
-      const cleanToken = storedToken.replace(/^"+|"+$/g, "");
-      setAuthToken(cleanToken);
-    }
+    const initializeAuth = async () => {
+      console.log('[APP CONTEXT] Initializing auth from localStorage');
+      
+      // Restore token
+      const storedToken = localStorage.getItem("token");
+      if (storedToken && storedToken !== "undefined") {
+        const cleanToken = storedToken.replace(/^"+|"+$/g, "");
+        console.log('[APP CONTEXT] Token restored from localStorage');
+        setAuthToken(cleanToken);
+      }
 
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+      // Restore user
+      const storedUser = localStorage.getItem("user");
+      if (storedUser && storedUser !== "undefined") {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          console.log('[APP CONTEXT] User restored from localStorage:', parsedUser.email);
+          setAuthUser(parsedUser);
+        } catch (err) {
+          console.warn('[APP CONTEXT] Failed to parse stored user:', err.message);
+          localStorage.removeItem("user");
+        }
+      }
 
-    fetchBlogs();
+      // Restore theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      setTheme(savedTheme);
+      if (savedTheme === "dark") document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+
+      // Fetch blogs silently on initial load (don't show errors)
+      fetchBlogs(false);
+
+      // Mark as initialized
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
   }, []);
 
   useEffect(() => {

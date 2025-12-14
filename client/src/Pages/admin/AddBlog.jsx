@@ -18,6 +18,7 @@ const AddBlog = () => {
   const [category, setCategory] = useState('Startup');
   const [language, setLanguage] = useState('en');
   const [isPublished, setIsPublished] = useState(false);
+  const [fetchedDescription, setFetchedDescription] = useState('');
 
   // Loading States
   const [isAdding, setIsAdding] = useState(false);
@@ -66,7 +67,8 @@ const AddBlog = () => {
   // Submit Blog
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    if (!image) return toast.error("Please upload a thumbnail");
+    const isEditing = window.location.pathname.includes('/admin/addblog/') && window.location.pathname.split('/').pop() !== 'addblog';
+    if (!image && !isEditing) return toast.error("Please upload a thumbnail");
 
     try {
       setIsAdding(true);
@@ -79,7 +81,11 @@ const AddBlog = () => {
       formData.append('language', language);
       formData.append('isPublished', isPublished);
 
-      const { data } = await axios.post('/api/add/blogs', formData, {
+      // If this is an edit (id in URL), call update endpoint and include id
+      const endpoint = window.location.pathname.includes('/admin/addblog/') ? '/api/add/update' : '/api/add/blogs';
+      if (endpoint === '/api/add/update') formData.append('id', window.location.pathname.split('/').pop());
+
+      const { data } = await axios.post(endpoint, formData, {
         headers: { Authorization: token }
       });
 
@@ -101,6 +107,32 @@ const AddBlog = () => {
     }
   };
 
+  // Fetch blog for edit if id present
+  useEffect(() => {
+    const urlParts = window.location.pathname.split('/');
+    const maybeId = urlParts[urlParts.length - 1];
+    if (!maybeId || maybeId === 'addblog') return;
+    (async () => {
+      try {
+        const { data } = await axios.get(`/api/add/blog/${maybeId}`);
+        if (data.success && data.blog) {
+          const b = data.blog;
+          setTitle(b.title || '');
+          setSubTitle(b.subTitle || '');
+          setCategory(b.category || 'Startup');
+          setLanguage(b.language || 'en');
+          setIsPublished(!!b.isPublished);
+          setFetchedDescription(b.description || '');
+          if (b.image) {
+            setPreviewUrl(b.image);
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    })();
+  }, []);
+
   // Initialize Quill
   useEffect(() => {
     if (!quillRef.current && editorRef.current) {
@@ -116,6 +148,10 @@ const AddBlog = () => {
           ],
         },
       });
+      // apply fetched description (for edit mode)
+      if (fetchedDescription) {
+        quillRef.current.root.innerHTML = fetchedDescription;
+      }
     }
   }, []);
 

@@ -19,6 +19,7 @@ import {
   Play,
   Pause
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Blog = () => {
   const { id } = useParams();
@@ -48,7 +49,8 @@ const Blog = () => {
   // comment form
   const [content, setContent] = useState('');
   const [name, setName] = useState('');
-  const { /* axios from context used above */ } = useAppContext();
+  const { user } = useAppContext();
+  const { openLogin } = useAuth();
 
   // translations (kept small; use 'en' by default)
   const translations = {
@@ -108,6 +110,11 @@ const Blog = () => {
   // --- comments
   const addComment = async (e) => {
     e.preventDefault();
+    if (!user) {
+      toast.error('Please login to comment');
+      openLogin();
+      return;
+    }
     try {
       const res = await axios.post('/api/add/add-comment', { blog: id, name, content });
       if (res.data?.success) {
@@ -518,6 +525,17 @@ const Blog = () => {
             <h3 className="text-2xl font-bold mb-6">{t.discussion} ({comments?.filter(c => c.isApproved)?.length || 0})</h3>
 
             <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 mb-8">
+              {!user ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                  <p className="text-gray-700 mb-3">Please log in to share your thoughts</p>
+                  <button
+                    onClick={openLogin}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 inline-block"
+                  >
+                    Login to Comment
+                  </button>
+                </div>
+              ) : (
               <form onSubmit={addComment} className="space-y-4">
                 <div className="flex gap-4 items-center">
                   <img src={assets.user_icon} alt="user" className="w-10 h-10 rounded-full bg-gray-200 p-1" />
@@ -541,6 +559,7 @@ const Blog = () => {
                   <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-md font-medium hover:bg-blue-700"> {t.post_comment} </button>
                 </div>
               </form>
+              )}
             </div>
 
             <div className="space-y-6">

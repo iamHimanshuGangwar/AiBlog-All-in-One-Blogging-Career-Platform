@@ -36,6 +36,11 @@ const sendEmailWithRetry = async (mailOptions, retries = 2) => {
 
 export const subscribe = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Please login to subscribe' });
+    }
+
     const { email } = req.body;
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return res.status(400).json({ success: false, message: 'Invalid email' });

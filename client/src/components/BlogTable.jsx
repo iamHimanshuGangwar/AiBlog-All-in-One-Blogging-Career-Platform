@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useAppContext } from '../context/AppContext'
 import toast from 'react-hot-toast'
-import { Trash2, Globe, EyeOff, Loader2 } from 'lucide-react'
+import { Trash2, Globe, EyeOff, Loader2, Pen } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const BlogTable = ({ blog, index, fetchBlogs }) => {
   const { title, createdAt, isPublished, _id } = blog
@@ -10,6 +11,7 @@ const BlogTable = ({ blog, index, fetchBlogs }) => {
 
   const [isDeleting, setIsDeleting] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
+  const navigate = useNavigate()
 
   const deleteBlogs = async () => {
     const confirm = window.confirm('Are you sure you want to permanently delete this blog?')
@@ -18,7 +20,7 @@ const BlogTable = ({ blog, index, fetchBlogs }) => {
     setIsDeleting(true)
     try {
       const { data } = await axios.post(
-        '/add/delete',
+        '/api/add/delete',
         { id: _id },
         { headers: { Authorization: token } }
       )
@@ -37,7 +39,7 @@ const BlogTable = ({ blog, index, fetchBlogs }) => {
     setIsToggling(true)
     try {
       const { data } = await axios.post(
-        '/add/toggle-publish',
+        '/api/add/toggle-publish',
         { id: _id },
         { headers: { Authorization: token } }
       )
@@ -122,6 +124,16 @@ const BlogTable = ({ blog, index, fetchBlogs }) => {
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </button>
         </div>
+          <div className="ml-2">
+            <button
+              onClick={() => navigate(`/admin/addblog/${_id}`)}
+              title="Edit Blog"
+              className="p-2 rounded-full bg-indigo-600 text-white shadow-lg hover:scale-105 transition-transform"
+              type="button"
+            >
+              <Pen className="w-4 h-4" />
+            </button>
+          </div>
       </td>
     </tr>
   )

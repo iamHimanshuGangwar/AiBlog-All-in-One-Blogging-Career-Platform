@@ -2,15 +2,24 @@ import React, { useState } from 'react'
 import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 
 const Newsletter = () => {
   const [email, setEmail] = useState('')
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { axios } = useAppContext();
+  const { axios, user } = useAppContext();
+  const { openLogin } = useAuth();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast.error('Please login to subscribe')
+      openLogin()
+      return
+    }
+
     if (!email || isLoading) return;
 
     setIsLoading(true);
