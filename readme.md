@@ -92,15 +92,11 @@ Notes:
 
 4. Start backend
 
-```bash
-npm --prefix server start
-```
+npm start
 
 5. Start frontend (in a separate terminal)
 
-```bash
-npm --prefix client run dev
-```
+npm run dev
 
 Open `http://localhost:5173` (or the port printed by Vite) to use the app.
 
