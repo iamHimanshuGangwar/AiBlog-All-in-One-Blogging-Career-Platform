@@ -191,12 +191,6 @@ Contributions are welcome. For code changes:
 
 ---
 
-## License
-
-This project does not include a license file. Add a LICENSE if you plan to open-source it.
-
----
-
 If you want, I can also:
 
 - Add an API reference markdown file listing all endpoints with request/response examples
