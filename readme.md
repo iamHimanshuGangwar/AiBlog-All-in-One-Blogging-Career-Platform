@@ -196,3 +196,4 @@ If you want, I can also:
 - Add an API reference markdown file listing all endpoints with request/response examples
 - Add a quickstart script to install & run both client and server with one command
 - Update README badges, screenshots, or a short demo GIF (you can provide assets)
+  
