@@ -8,7 +8,7 @@ AiBlog is a full-stack blogging and career platform that combines content creati
 - JWT-based authentication with OTP verification on registration
 - Admin panel for posting jobs and managing applications
 - User flows: view blogs, create posts, resume builder, AI image generator, search jobs and apply with resume upload
-  
+
 ---
 
 ## Highlights
